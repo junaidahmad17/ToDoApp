@@ -18,11 +18,12 @@ func setupDB(){
 		if e!=nil{
 			fmt.Println("Error:  ", e)
 		}
+
 		db, err = gorm.Open(sqlite.Open("ToDo.db"), &gorm.Config{})
 		if err != nil {
 		fmt.Println("Status:", "Error_Get!!!")
 		}
-		
+		// nothing 
 	}
 }
 func GetTasks(c *gin.Context) {
