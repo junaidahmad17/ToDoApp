@@ -23,7 +23,6 @@ func setupDB(){
 		if err != nil {
 		fmt.Println("Status:", "Error_Get!!!")
 		}
-		// nothing 
 	}
 }
 func GetTasks(c *gin.Context) {
