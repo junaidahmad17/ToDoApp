@@ -13,6 +13,10 @@ func SetupRouter() *gin.Engine {
 	 
 	r.POST("/tasks", handler.CreateTask)
 
+	r.PATCH("/tasks/:id", handler.EditTask)
+	
+	r.DELETE("/tasks/:id", handler.DeleteTask)
+
 	r.Run(":8080") // Main File 
 
 	return r
