@@ -32,6 +32,7 @@ func setupDB(){
 	}
 }
 func GetTasks(c *gin.Context) {
+	
 	setupDB()
 
 	var task0 []model.Task
@@ -41,6 +42,7 @@ func GetTasks(c *gin.Context) {
 }
 
 func CreateTask(c *gin.Context) {
+	
 	setupDB()
 
 	db.AutoMigrate(&model.Task{})
@@ -54,7 +56,9 @@ func CreateTask(c *gin.Context) {
 }
 
 func DeleteTask(c *gin.Context) {
+	
 	setupDB()
+
 	var task0 model.Task
 	if e := db.Where("id=?",c.Param("id")).First(&task0).Error; e != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
@@ -66,19 +70,19 @@ func DeleteTask(c *gin.Context) {
 }
 
 func EditTask(c *gin.Context) {
+	
 	setupDB()
+
 	var task0 model.Task
-	fmt.Println("Yes!, No! ----------------------------------------------------")
 	if e := db.Where("id=?",c.Param("id")).First(&task0).Error; e != nil {
-		fmt.Println("No! ----------------------------------------------------")
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
 		return 
 	}
 
-	fmt.Println("Yes! ------------------------------------------------------------")
+	
 	var input UpdateTask
 	c.BindJSON(&input)
 	fmt.Println("Com_status", input.Com_status)
 	db.Model(&task0).Updates(model.Task{Title: input.Title, Description: input.Description, Com_status: input.Com_status})
-	c.JSON(http.StatusOK, "Task Edited!")
+	c.JSON(http.StatusOK, "Task Modified Successfully!")
 }

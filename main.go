@@ -7,8 +7,9 @@ import (
 var err error
 
 func main() {
-	// handler.SetupDB()
+
 	r := router.SetupRouter()
+	
 	r.Run()
-	// Comment 
+
 }
