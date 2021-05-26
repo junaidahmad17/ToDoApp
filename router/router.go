@@ -1,7 +1,8 @@
-package router // Controller 
+package router 
 
 import (
 	"todoapp/handler"
+	"todoapp/report"
 	"github.com/gin-gonic/gin"
 )
    
@@ -14,8 +15,13 @@ func SetupRouter() *gin.Engine {
 	r.POST("/tasks", handler.CreateTask)
 
 	r.PATCH("/tasks/:id", handler.EditTask)
-	
+
 	r.DELETE("/tasks/:id", handler.DeleteTask)
+
+	// Reports
+
+	r.GET("/report", report.CountTask)
+
 
 	r.Run(":8080") // Main File 
 
