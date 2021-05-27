@@ -18,10 +18,13 @@ func SetupRouter() *gin.Engine {
 
 	r.DELETE("/tasks/:id", handler.DeleteTask)
 
+	r.DELETE("/all", handler.DeleteAll)
+
 	// Reports
 
-	r.GET("/report", report.CountTask)
+	r.GET("/report/", report.CountTask)
 
+	r.GET("/report/mt", report.MissedTasks)
 
 	r.Run(":8080") // Main File 
 

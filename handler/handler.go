@@ -62,3 +62,10 @@ func EditTask(c *gin.Context) {
 	config.DB.Model(&task0).Updates(model.Task{Title: input.Title, Description: input.Description, Com_status: input.Com_status})
 	c.JSON(http.StatusOK, "Task Modified Successfully!")
 }
+
+func DeleteAll(c *gin.Context) {
+	var task0 []model.Task
+	config.DB.Find(&task0)
+	config.DB.Delete(&task0)
+	c.JSON(http.StatusOK, "All Entries Deleted!")
+}
