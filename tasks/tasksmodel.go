@@ -1,11 +1,19 @@
 package tasks
 
 import (
+	"fmt"
+	"os"
 	"time"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
+
+var DB *gorm.DB
+var err error
+
+
 type Task struct {
 
-	// user id foreign key int 
 	ID uint            `json:"id"`
 	Title string       `json:"title"`
 	Description string `json:"description"`
@@ -22,6 +30,21 @@ type UpdateTask struct {
   	Com_status bool	`json:"com_status"`
 }
 
-func (b *Task) TableName() string {
-	return "ToDo"
+func SetupDB() {
+	flag := false
+	
+	if DB == nil {
+	
+		if !flag {
+			e := os.Remove("C:\\Users\\Junaid Ahmad (WORK)\\Desktop\\GO\\newtodo\\todoapp\\ToDo.db")
+			if e != nil {
+				fmt.Println(e.Error)
+			}
+		}
+		DB, err = gorm.Open(sqlite.Open("ToDo.db"), &gorm.Config{})
+		if err != nil {
+			fmt.Println(err.Error)
+		}
+	}
 }
+

@@ -6,14 +6,13 @@ import(
 	"fmt"
 	"os"
 )
-
+var Count uint
 type User struct {
 
-	ID int
+	IDU uint
 	Username string 
 	Password string
 	Email string
-	//TaskU []tasks.Task //`gorm:"ForeignKey:UserID"`
 }
 
 var UDB *gorm.DB
@@ -21,21 +20,20 @@ var Uerr error
 
 func SetupUDB() {
 	flag := true
-	
+	Count = 0	
 	if UDB == nil {
 	
-		if flag == false {
+		if flag {
 			e := os.Remove("C:\\Users\\Junaid Ahmad (WORK)\\Desktop\\GO\\newtodo\\todoapp\\Users.db")
-			fmt.Println("Erased------------------------------")
 			if e != nil {
-				fmt.Println("Error:  ", e)
+				fmt.Println("Error:  ", e.Error())
 			}
 		}
 		
 		UDB, Uerr = gorm.Open(sqlite.Open("Users.db"), &gorm.Config{})
 		
 		if Uerr != nil {
-		fmt.Println("Status:", "Error_Get!!!")
+		fmt.Println("Status:", "Failed to open database!")
 		}
 	}
 }
