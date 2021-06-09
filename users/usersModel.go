@@ -23,7 +23,7 @@ func SetupUDB() {
 	Count = 0	
 	if UDB == nil {
 	
-		if flag {
+		if !flag {
 			e := os.Remove("C:\\Users\\Junaid Ahmad (WORK)\\Desktop\\GO\\newtodo\\todoapp\\Users.db")
 			if e != nil {
 				fmt.Println("Error:  ", e.Error())

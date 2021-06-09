@@ -21,6 +21,7 @@ type Task struct {
 	Due_DT time.Time	`json:"due_DT"`
   	Com_status bool	`json:"com_status"`
   	Com_DT time.Time	`json:"com_DT"`
+	Attachment string
 	Uid int
 }
 
@@ -35,7 +36,7 @@ func SetupDB() {
 	
 	if DB == nil {
 	
-		if !flag {
+		if flag {
 			e := os.Remove("C:\\Users\\Junaid Ahmad (WORK)\\Desktop\\GO\\newtodo\\todoapp\\ToDo.db")
 			if e != nil {
 				fmt.Println(e.Error)
@@ -48,3 +49,4 @@ func SetupDB() {
 	}
 }
 
+// form data 

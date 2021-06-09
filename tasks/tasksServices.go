@@ -1,11 +1,16 @@
 package tasks
 
 import (
-	"time"
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
+	"io"
 	"strconv"
+	"time"
+	"io/ioutil"
+	"github.com/gin-gonic/gin"
+	//"fmt"
 )
+var attachfolder string = "C:\\Users\\Junaid Ahmad (WORK)\\Desktop\\GO\\newtodo\\todoapp\\attachments"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 func GetUid(c *gin.Context) int {
@@ -114,4 +119,95 @@ func MissedTasks(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Missed Deadlines":count})
+}
+
+
+func attachFile(c *gin.Context) {
+	var task Task
+	if e := DB.Where("id=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
+		return 
+	}
+	file, fh, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusNotFound,err.Error)
+	}
+	
+	filename := "u"+strconv.Itoa(GetUid(c))+"tsk"+c.Param("id")+fh.Filename
+	path := attachfolder+"\\"+filename
+	
+	_, err = os.Stat(path)
+	if os.IsExist(err) {
+		os.Remove(path)
+	}
+	nfile, err := os.Create(path)
+	if err != nil {
+		c.JSON(http.StatusBadRequest,err.Error())
+		return
+	}
+	defer nfile.Close()
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+			
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	defer file.Close()
+	nfile.Write(content)
+	task.Attachment = fh.Filename
+	DB.Save(&task)
+	c.JSON(http.StatusOK,"File uploaded successfully")
+
+}
+
+func deleteFile(c *gin.Context) {
+	var task Task
+	if e := DB.Where("id=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
+		return 
+	}
+	if task.Attachment == "" {
+		c.JSON(http.StatusNotFound, "No Attachment Found!")
+		return 
+	}
+	filename := "u"+strconv.Itoa(GetUid(c))+"tsk"+c.Param("id")+task.Attachment
+	path := attachfolder+"\\"+filename
+	os.Remove(path)
+	task.Attachment = ""
+	DB.Save(&task)
+	c.JSON(http.StatusOK, "Attachment Deleted Successfully!")
+}
+
+func downloadFile(c *gin.Context) {
+	var task Task
+	if e := DB.Where("id=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
+		c.JSON(http.StatusOK, "Task does not exist!")
+		return 
+	}
+	if task.Attachment == "" {
+		c.JSON(http.StatusNotFound, "The task does not have any attachment")
+		return 
+	}
+	filename := "u"+strconv.Itoa(GetUid(c))+"tsk"+c.Param("id")+task.Attachment
+	path := attachfolder+"\\"+filename
+	file, err := os.Open(path)
+	if err!= nil {
+		c.JSON(http.StatusNotImplemented, "Unable to open file!")
+		return 
+	}
+	defer file.Close()
+	mkfile := make([]byte, 512)
+	file.Read(mkfile)
+	fileType := http.DetectContentType(mkfile)
+	fileInfo, _ := file.Stat()
+	fileSize := fileInfo.Size()
+
+	c.Header("Attachment name: ", task.Attachment)
+	c.Header("type: ", fileType)
+	fs := strconv.FormatInt(fileSize, 10)
+	c.Header("size: ", fs)
+
+	file.Seek(0,0)
+	io.Copy(c.Writer, file)
+
 }
