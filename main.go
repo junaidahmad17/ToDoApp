@@ -1,18 +1,19 @@
 package main
 
 import (
-	"todoapp/router"
-	"todoapp/config"
+	"todoapp/auth"
+	"todoapp/tasks"
+	"todoapp/users"
 )
-
-var err error
 
 func main() {
 
-	config.SetupDB()
+	tasks.SetupDB()
+	users.SetupUDB()
 
-	r := router.SetupRouter()
-	
-	r.Run()
+	r := auth.SetupRouter()
+	users.InitUsers(r)
+	tasks.InitTasks(r)
 
+	r.Run(":8080")
 }
