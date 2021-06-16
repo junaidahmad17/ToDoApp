@@ -9,22 +9,23 @@ import(
 var Count uint
 type User struct {
 
-	IDU uint
+	ID uint `json:"id"`
 	Username string 
 	Password string
 	Email string
+	EmailVerified bool
 }
 
 var UDB *gorm.DB
 var Uerr error
-
+//Allow insecure apps
 func SetupUDB() {
 	flag := true
 	Count = 0	
 	if UDB == nil {
-	
-		if flag {
-			e := os.Remove("C:\\Users\\Junaid Ahmad (WORK)\\Desktop\\GO\\newtodo\\todoapp\\Users.db")
+		println("Value: ", os.Getenv("DBADD"))
+		if !flag {
+			e := os.Remove(os.Getenv("DBADD")+"Users.db")
 			if e != nil {
 				fmt.Println("Error:  ", e.Error())
 			}

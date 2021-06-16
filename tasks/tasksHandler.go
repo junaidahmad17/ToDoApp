@@ -24,4 +24,12 @@ func InitTasks(r *gin.Engine) {
 
 	r.GET("/report/mt", auth.IsAuthorized(), MissedTasks)
 
+	r.GET("similar/tasks", auth.IsAuthorized(), SimilarTasks)
+
+	// Attachment 
+
+	r.PUT("/uploadfile/:id",auth.IsAuthorized(), AttachFile)
+	r.DELETE("/delfile/:id",auth.IsAuthorized(), DeleteFile)
+	r.GET("/download/:id",auth.IsAuthorized(), DownloadFile)
+
 }
