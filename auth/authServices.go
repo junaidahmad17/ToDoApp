@@ -33,7 +33,7 @@ func IsAuthorized() gin.HandlerFunc {
 			jwt.ParseWithClaims(tokenv, claims, func(token *jwt.Token) (interface{}, error) {
 				return []byte(mySigningKey), nil
 			})
-
+			
 			y := claims["client"]
 			c.Set("client", y)
 
@@ -56,7 +56,7 @@ func CreateJWT(IDU string, password string) (string, error) {
 	claims["client"] = IDU
 	claims["aud"] = password
 	claims["iss"] = "jwtgo.io"
-	claims["exp"] = time.Now().Add(time.Minute * 100).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
 
 	tokenString, err := token.SignedString(mySigningKey)
 
