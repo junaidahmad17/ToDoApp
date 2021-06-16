@@ -1,14 +1,16 @@
 package tasks
 
 import (
+	//"fmt"
+	//"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
-	"io"
 	"strconv"
 	"time"
-	"io/ioutil"
+
 	"github.com/gin-gonic/gin"
-	//"fmt"
 )
 var attachfolder string = "C:\\Users\\Junaid Ahmad (WORK)\\Desktop\\GO\\newtodo\\todoapp\\attachments"
 
@@ -35,16 +37,22 @@ func GetTasks(c *gin.Context) {
 func CreateTask(c *gin.Context) {
 	DB.AutoMigrate(&Task{})
 	
-	var task Task
+	var input Task
 	r,_ := c.Cookie("Token")
 	if r == "" {
 		c.JSON(http.StatusForbidden,"Forbidden")
 		return
 	}
-	c.BindJSON(&task)
+	c.BindJSON(&input)
 
-	task.Uid = GetUid(c)
-	DB.Create(&task)
+	input.Uid = GetUid(c)
+
+	var task Task 
+	if e := DB.Where("Title=? AND Uid=?",input.Title,GetUid(c)).First(&task).Error; e == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task already exists!"})
+		return 
+	}
+	DB.Create(&input)
 
 	c.JSON(http.StatusOK, "Task Added!")
 	
@@ -54,7 +62,7 @@ func CreateTask(c *gin.Context) {
 func DeleteTask(c *gin.Context) {
 	
 	var task Task
-	if e := DB.Where("ID=? AND Uid=?",task.ID,GetUid(c)).First(&task).Error; e != nil {
+	if e := DB.Where("ID=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
 		return 
 	}
@@ -67,14 +75,20 @@ func DeleteTask(c *gin.Context) {
 func EditTask(c *gin.Context) {
 
 	var task Task
-	if e := DB.Where("ID=? AND Uid=?",task.ID,GetUid(c)).First(&task).Error; e != nil {
+	if e := DB.Where("ID=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
 		return 
 	}
-
 	
 	var input UpdateTask
 	c.BindJSON(&input)
+
+	var check Task
+	if e := DB.Where("Title=? AND Uid=?",input.Title,GetUid(c)).First(&check).Error; e == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task already exists!"})
+		return 
+	}
+
 	DB.Model(&task).Updates(Task{Title: input.Title, Description: input.Description, Com_status: input.Com_status})
 	c.JSON(http.StatusOK, "Task Modified Successfully!")
 }
@@ -122,7 +136,7 @@ func MissedTasks(c *gin.Context) {
 }
 
 
-func attachFile(c *gin.Context) {
+func AttachFile(c *gin.Context) {
 	var task Task
 	if e := DB.Where("id=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
@@ -160,7 +174,7 @@ func attachFile(c *gin.Context) {
 
 }
 
-func deleteFile(c *gin.Context) {
+func DeleteFile(c *gin.Context) {
 	var task Task
 	if e := DB.Where("id=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Task does not exist!"})
@@ -178,7 +192,7 @@ func deleteFile(c *gin.Context) {
 	c.JSON(http.StatusOK, "Attachment Deleted Successfully!")
 }
 
-func downloadFile(c *gin.Context) {
+func DownloadFile(c *gin.Context) {
 	var task Task
 	if e := DB.Where("id=? AND Uid=?",c.Param("id"),GetUid(c)).First(&task).Error; e != nil {
 		c.JSON(http.StatusOK, "Task does not exist!")
@@ -210,4 +224,26 @@ func downloadFile(c *gin.Context) {
 	file.Seek(0,0)
 	io.Copy(c.Writer, file)
 
+}
+
+func SimilarTasks(c *gin.Context) {
+
+	rows, _ := DB.Model(&Task{}).Where("Uid = ?", GetUid(c)).Order("Description").Rows()
+	defer rows.Close()
+	var description string
+	count := 2
+	flag := false
+	c.JSON(http.StatusOK, "Set 1\n")
+	for rows.Next() {
+		var task Task
+		DB.ScanRows(rows, &task)
+
+		if flag && description != task.Description {
+			c.JSON(http.StatusOK, "Set "+strconv.FormatInt(int64(count),10))
+			count = count+1
+		}
+		c.JSON(http.StatusOK, task.Description)
+		description = task.Description
+		flag = true
+	}
 }

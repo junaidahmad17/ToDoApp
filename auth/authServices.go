@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -10,7 +11,7 @@ import (
 )
 
 /////////////////////////////////------------------------------------------///////////////////////////////////////////
-var MySigningKey = []byte("intel")
+var MySigningKey = []byte(os.Getenv("MYCODE"))
 
 func IsAuthorized() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -44,7 +45,7 @@ func IsAuthorized() gin.HandlerFunc {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-var mySigningKey = []byte("intel")
+var mySigningKey = []byte(os.Getenv("MYCODE"))
 
 func CreateJWT(IDU string, password string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -67,7 +68,10 @@ func CreateJWT(IDU string, password string) (string, error) {
 }
 
 func GetJWT(c *gin.Context) (string, error) {
-	token, _ := c.Cookie("Token")
+	token, err := c.Cookie("Token")
+	if err!=nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unable to access token"})
+	}
 	if token == "" {
 		return "", fmt.Errorf("missing tokken")
 	}
