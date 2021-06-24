@@ -15,18 +15,24 @@ var MySigningKey = []byte(os.Getenv("MYCODE"))
 
 func IsAuthorized() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		tokenv, err := GetJWT(c)
+
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, "Error UnAuthorized")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return
 		}
 		token, er := jwt.Parse(tokenv, func(token *jwt.Token) (interface{}, error) {
 			return []byte(mySigningKey), nil
 		})
+
+		// Expiry Error
 		if er != nil {
-			c.JSON(http.StatusUnauthorized, err.Error())
+			c.JSON(http.StatusUnauthorized, gin.H{"error":er.Error()})
+			return
 		}
+
 		_, ok := token.Claims.(jwt.MapClaims)
 		if ok && token.Valid {
 			claims := jwt.MapClaims{}
@@ -39,7 +45,7 @@ func IsAuthorized() gin.HandlerFunc {
 
 		} else {
 			c.Abort()
-			c.JSON(http.StatusUnauthorized, "Invalid token")
+			c.JSON(http.StatusUnauthorized, gin.H{"error":"invalid token"})
 		}
 	}
 }
@@ -56,7 +62,7 @@ func CreateJWT(IDU string, password string) (string, error) {
 	claims["client"] = IDU
 	claims["aud"] = password
 	claims["iss"] = "jwtgo.io"
-	claims["exp"] = time.Now().Add(time.Minute * 100).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
 
 	tokenString, err := token.SignedString(mySigningKey)
 

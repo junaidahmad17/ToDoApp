@@ -1,10 +1,11 @@
 package users
 
-import(
-	"gorm.io/gorm"
-  	"gorm.io/driver/sqlite"
-	"fmt"
+import (
+	"log"
 	"os"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 var Count uint
 type User struct {
@@ -27,14 +28,14 @@ func SetupUDB() {
 		if !flag {
 			e := os.Remove(os.Getenv("DBADD")+"Users.db")
 			if e != nil {
-				fmt.Println("Error:  ", e.Error())
+				log.Fatalln(e)
 			}
 		}
 		
 		UDB, Uerr = gorm.Open(sqlite.Open("Users.db"), &gorm.Config{})
 		
 		if Uerr != nil {
-		fmt.Println("Status:", "Failed to open database!")
+		log.Fatalln(Uerr)
 		}
 	}
 }
