@@ -1,7 +1,7 @@
 package tasks
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -38,12 +38,12 @@ func SetupDB() {
 		if flag {
 			e := os.Remove("ToDo.db")
 			if e != nil {
-				fmt.Println(e.Error)
+				log.Fatalln(e)
 			}
 		}
 		DB, err = gorm.Open(sqlite.Open(os.Getenv("DBADD")+"ToDo.db"), &gorm.Config{})
 		if err != nil {
-			fmt.Println(err.Error)
+			log.Fatalln(err)
 		}
 	}
 }

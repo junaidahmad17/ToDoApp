@@ -2,7 +2,6 @@ package users
 
 import (
 	"encoding/base64"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,7 +32,7 @@ func CreateUser(c *gin.Context) {
 	
 	ePassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error":err.Error()})
 	}
 	user.Password = string(ePassword)
 	
@@ -51,7 +50,7 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusCreated ,"Account Registered")
 		return 
 	}
-	c.JSON(http.StatusNotAcceptable, gin.H{"Error":"Email already registered"} )
+	c.JSON(http.StatusNotAcceptable, gin.H{"error":"email already registered"} )
 }
 
 func VerifyUser(c *gin.Context) {
@@ -59,12 +58,12 @@ func VerifyUser(c *gin.Context) {
 	var user *User
 	out := UDB.Where(&User{Email:string(decodedToken)}).First(&user)
 	if out.RowsAffected ==0 {
-		c.JSON(http.StatusNotFound, "Invalid verification link!")
+		c.JSON(http.StatusNotFound, gin.H{"error":"invalid verification link!"})
 		return
 	}
 	user.EmailVerified = true 
 	UDB.Save(&user)	
-	c.JSON(http.StatusOK, "Email Verified Successfully!")
+	c.JSON(http.StatusOK, gin.H{"msg":"email verified successfully!"})
 }
 
 func Login(c *gin.Context) {
@@ -75,17 +74,17 @@ func Login(c *gin.Context) {
 
 	out := UDB.Where("Email = ?", input.Email).Find(&user)
 	if out.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, "1Invalid Email or Password!")
+		c.JSON(http.StatusNotFound, gin.H{"error":"invalid email or password!"})
 		return
 	}
 	
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		c.JSON(http.StatusUnauthorized, "2Invalid Email or Password!")
+		c.JSON(http.StatusUnauthorized, gin.H{"error":"ivalid email or password!"})
 		return
 	}
 	if !user.EmailVerified {
-		c.JSON(http.StatusExpectationFailed, "Please verify your email address first!")
+		c.JSON(http.StatusExpectationFailed, gin.H{"error":"please verify your email address first!"})
 		return
 	}
 
@@ -97,20 +96,20 @@ func Login(c *gin.Context) {
 
 	c.SetCookie("Token",token,1000000,"/","",false,false)
 
-	c.JSON(http.StatusOK, "User logged in successfully")
+	c.JSON(http.StatusOK, gin.H{"msg":"user logged in successfully"})
 
 }
 
 func Logout(c *gin.Context) {
 	r,_ := c.Cookie("Token")
 	if r == "" {
-		c.JSON(http.StatusForbidden,"Forbidden")
+		c.JSON(http.StatusForbidden,gin.H{"error":"forbidden"})
 		return
 	}
 	
 	c.SetCookie("Token","",-1,"/","",false,false)
 
-	c.JSON(http.StatusOK,"Logged out successfully!")
+	c.JSON(http.StatusOK,gin.H{"msg":"logged out successfully!"})
 	
 }
 
@@ -133,7 +132,7 @@ func ForgotPass(c *gin.Context) {
 		return
 	}
 	
-	c.JSON(http.StatusNotFound, "Unregistered Email!")
+	c.JSON(http.StatusNotFound, gin.H{"msg": "unregistered email!"})
 }
 
 func ResetLink(c *gin.Context) {
@@ -145,21 +144,21 @@ func ResetLink(c *gin.Context) {
 
 	out := UDB.Where(&User{Email:email}).First(&user)
 	if out.RowsAffected==0 {
-		c.JSON(http.StatusNotFound, "Invalid reset link")
+		c.JSON(http.StatusNotFound, gin.H{"msg":"invalid reset link"})
 		return
 	}
 	var input User
 	err := c.BindJSON(&input)
 	if err!= nil {
-		fmt.Println("Error: ", err.Error())	
+		c.JSON(http.StatusBadRequest,gin.H{"error": err.Error()})	
 	}
 	// Hashing Password
 	ePassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	user.Password = string(ePassword)
 	
 	UDB.Save(&user)
-	c.JSON(http.StatusOK, "Password changed successfully!")
+	c.JSON(http.StatusOK, gin.H{"error":"password changed successfully!"})
 }

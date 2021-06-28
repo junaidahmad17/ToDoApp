@@ -1,21 +1,28 @@
 package main
 
 import (
+	"log"
 	"os"
-	
+
 	"todoapp/auth"
 	"todoapp/tasks"
 	"todoapp/users"
 
 	"github.com/joho/godotenv"
 )
+
 func init() {
-	_ = godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	tasks.SetupDB()
 	users.SetupUDB()
 }
+
 func main() {
-	
+	tasks.Remind()
+
 	r := auth.SetupRouter()
 	users.InitUsers(r)
 	tasks.InitTasks(r)
