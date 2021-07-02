@@ -16,4 +16,11 @@ func InitUsers(r *gin.Engine) {
 
 	r.POST("/reset", ForgotPass)
 	r.POST("/resetlink/:token", ResetLink)
+
+
+	///  OAuth2
+	
+	r.GET("/gmail", GmailLogin)
+	r.GET("/auth/google", Redirect)
+	r.GET("/auth/google/callback", Callback)
 }

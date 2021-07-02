@@ -6,8 +6,10 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/markbates/goth v1.67.1 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/zmb3/gogetdoc v0.0.0-20190228002656-b37376c5da6a // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect

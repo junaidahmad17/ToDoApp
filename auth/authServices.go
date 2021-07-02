@@ -15,7 +15,6 @@ var MySigningKey = []byte(os.Getenv("MYCODE"))
 
 func IsAuthorized() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		tokenv, err := GetJWT(c)
 
 		if err != nil {
@@ -62,7 +61,7 @@ func CreateJWT(IDU string, password string) (string, error) {
 	claims["client"] = IDU
 	claims["aud"] = password
 	claims["iss"] = "jwtgo.io"
-	claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * 100).Unix()
 
 	tokenString, err := token.SignedString(mySigningKey)
 
@@ -83,3 +82,4 @@ func GetJWT(c *gin.Context) (string, error) {
 	}
 	return token, nil
 }
+
