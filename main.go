@@ -19,7 +19,7 @@ func init() {
 	tasks.SetupDB()
 	users.SetupUDB()
 }
-
+// redis 
 func main() {
 	tasks.Remind()
 

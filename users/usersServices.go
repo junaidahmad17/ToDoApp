@@ -8,7 +8,7 @@ import (
 	"time"
 	"log"
 	"os"
-	"math/rand"
+	//"math/rand"
 	"todoapp/auth"
 	"todoapp/email"
 
@@ -56,11 +56,14 @@ func VerifyEmail(x string, c *gin.Context) bool {
 	flag := out.RowsAffected==0
 	return flag
 }
-func allowCreateUser(user User,c *gin.Context) {
+func allowCreateUser(user User,c *gin.Context,f bool) {
 	UDB.Create(&user)
 		subject := "ToDo Account Resgisteration"
 		content := "Dear "+user.Username+",\n\n"
-		content = content+"A ToDo account has been registered using your email! Please click on the link below to confirm.\n"
+		content = content+"A ToDo account has been registered using your email!"
+		if f {
+			content = content+ "Please click on the link below to confirm.\n"
+		}
 		content = content+"/verify/"+encodeURL(user.Email)
 		content = content+"\n\nRegards,\nToDo Team"
 		
@@ -81,7 +84,7 @@ func CreateUser(c *gin.Context) {
 
 	if VerifyEmail(user.Email, c) {
 		
-		allowCreateUser(user, c)
+		allowCreateUser(user, c,true)
 		return 
 	}
 	c.JSON(http.StatusNotAcceptable, gin.H{"error":"email already registered"} )
@@ -126,7 +129,7 @@ func Login(c *gin.Context) {
 	
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		c.JSON(http.StatusUnauthorized, gin.H{"error":"ivalid email or password!"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error":"invalid email or password!"})
 		return
 	}
 	if !user.EmailVerified {
@@ -231,9 +234,9 @@ func Callback(c *gin.Context)  {
 		var u User
 		u.Email = user.Email
 		u.Username = user.Name
-		u.Password = strconv.Itoa(rand.Int())
+		//u.Password = strconv.Itoa(rand.Int())
 		u.EmailVerified = true
-		allowCreateUser(u, c)
+		allowCreateUser(u, c, false)
 	}
 	t.Execute(c.Writer, user)
 }
